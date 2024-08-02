@@ -1,0 +1,43 @@
+---
+- name: Configure OPS445 Linux VM
+  hosts: mmateo2
+  become: yes
+  tasks:
+    - name: Update Apache (httpd)
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Install EPEL repository
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Remove tree package
+      yum:
+        name: tree
+        state: absent
+
+    - name: Set hostname
+      hostname:
+        name: mmateo2
+
+    - name: Create new user with sudo access
+      user:
+        name: mmateo2
+        groups: wheel
+        state: present
+
+    - name: Set up SSH for new user
+      authorized_key:
+        user: mmateo2
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Create directory structure for labs
+      file:
+        path: "/home/mmateo2/ops445/lab{{ item }}"
+        state: directory
+        owner: mmateo2
+        group: mmateo2
+      loop: "{{ range(1, 10) | list }}"
